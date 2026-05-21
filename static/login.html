@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企业知识库平台 — 登录</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:linear-gradient(135deg,#f0f2f5 0%,#e8ecf1 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-card{background:#fff;padding:44px 36px;border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,0.06);width:420px;max-width:92vw}
+.login-card .brand{text-align:center;margin-bottom:28px}
+.login-card .brand h1{font-size:22px;color:#1e293b;font-weight:700;letter-spacing:1px}
+.login-card .brand .co{font-size:12px;color:#94a3b8;margin-top:4px;letter-spacing:2px}
+.login-card label{display:block;font-size:13px;color:#475569;margin-bottom:6px;font-weight:600}
+.login-card input{width:100%;padding:12px 14px;font-size:15px;border:2px solid #e2e8f0;border-radius:10px;outline:none;margin-bottom:16px;transition:border-color 0.2s}
+.login-card input:focus{border-color:#2563eb}
+.login-card button{width:100%;padding:13px;font-size:15px;font-weight:600;background:#2563eb;color:#fff;border:none;border-radius:10px;cursor:pointer;transition:background 0.2s;letter-spacing:2px}
+.login-card button:hover{background:#1d4ed8}
+.login-card .err{color:#ef4444;font-size:12px;text-align:center;margin-top:8px;min-height:18px}
+.login-card .hint{font-size:11px;color:#94a3b8;text-align:center;margin-top:24px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div class="brand">
+    <h1>企业知识库平台</h1>
+    <div class="co">Enterprise RAG Knowledge Platform</div>
+  </div>
+  <label>账号</label>
+  <input type="text" id="username" placeholder="输入您的账号" autofocus>
+  <label>密码</label>
+  <input type="password" id="password" placeholder="输入密码" onkeydown="if(event.key==='Enter')login()">
+  <button onclick="login()">登 录</button>
+  <div class="err" id="errMsg"></div>
+  <div class="hint">
+    如需账号请联系系统管理员<br>手机扫码访问：点击首页「📱」按钮获取二维码<br>首次登录建议修改默认密码
+  </div>
+</div>
+<script>
+function setCookie(name, value, days) {
+  var d = new Date(); d.setTime(d.getTime() + (days||1)*86400000);
+  document.cookie = name + '=' + value + ';path=/;expires=' + d.toUTCString() + ';SameSite=Lax';
+}
+
+async function login() {
+  var u = document.getElementById('username').value.trim();
+  var p = document.getElementById('password').value.trim();
+  if (!u || !p) { document.getElementById('errMsg').textContent = '请输入账号和密码'; return; }
+  try {
+    var r = await fetch('/api/v1/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    var d = await r.json();
+    if (!r.ok) { document.getElementById('errMsg').textContent = d.detail; return; }
+    sessionStorage.setItem('auth_token', d.token);
+    sessionStorage.setItem('user_name', d.name);
+    sessionStorage.setItem('user_role', d.role);
+    sessionStorage.setItem('user_can_see', JSON.stringify(d.can_see));
+    setCookie('auth_token', d.token, 1);
+    window.location.href = '/';
+  } catch(e) { document.getElementById('errMsg').textContent = '登录失败，请检查网络连接'; }
+}
+</script>
+</body>
+</html>

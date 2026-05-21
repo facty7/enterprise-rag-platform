@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>企业知识库平台</title>
+<script src="/marked.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f0f2f5;--surface:#fff;--border:#e4e7ed;--text:#303133;--text2:#909399;--text3:#c0c4cc;--accent:#2563eb;--accent-hover:#1d4ed8;--accent-light:#eff6ff;--green:#22c55e;--warn:#e6a23c;--danger:#ef4444;--radius:12px;--sidebar-w:320px}
+[data-theme="dark"]{--bg:#1a1a2e;--surface:#222233;--border:#333355;--text:#dde;--text2:#888;--text3:#555;--accent:#3b82f6;--accent-hover:#60a5fa;--accent-light:#1e293b}
+body{font-family:"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:#1e293b;color:#c8d2e0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;z-index:20;transition:transform 0.25s}
+.sidebar::-webkit-scrollbar{width:3px}.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+.sidebar-header{padding:16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px}
+.sidebar-header .dot{width:10px;height:10px;background:var(--accent);border-radius:50%}
+.sidebar-header h1{font-size:17px;color:#fff;font-weight:700}
+.sidebar-header .sub{font-size:10px;color:#64748b}
+.user-badge{margin:10px 16px;padding:10px 14px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:12px;color:#94a3b8;display:flex;justify-content:space-between;align-items:center}
+.user-badge .uname{font-size:14px;color:#e2e8f0;font-weight:600}
+.user-badge .urole{font-size:11px;color:#64748b;margin-top:2px}
+.sec{padding:10px 12px 0}
+.sec .st{font-size:11px;color:#64748b;font-weight:600;letter-spacing:1px;padding:4px 8px 8px;display:flex;align-items:center;gap:6px}
+.sec .st .cnt{font-size:10px;background:rgba(255,255,255,0.08);color:#94a3b8;padding:1px 8px;border-radius:8px}
+.file-list{overflow-y:auto;max-height:40vh;padding:0 8px}
+.file-list::-webkit-scrollbar{width:3px}
+.file-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+.file-item{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:2px;border-radius:8px;cursor:pointer;transition:background 0.15s;font-size:13px}
+.file-item:hover{background:rgba(255,255,255,0.06)}
+.file-item.active{background:rgba(59,130,246,0.15)}
+.file-item .fi{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.fi.pdf{background:rgba(239,68,68,0.18);color:#ef4444}.fi.word{background:rgba(59,130,246,0.18);color:#3b82f6}.fi.excel{background:rgba(34,197,94,0.18);color:#22c55e}.fi.ppt{background:rgba(245,158,11,0.18);color:#f59e0b}.fi.other{background:rgba(255,255,255,0.06);color:#94a3b8}
+.file-item .finfo{flex:1;min-width:0}.file-item .fn{color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-item .fm{font-size:10px;color:#64748b;margin-top:1px}
+.file-item .fd{width:22px;height:22px;border:none;background:rgba(239,68,68,0.12);color:#ef4444;border-radius:5px;cursor:pointer;font-size:10px;flex-shrink:0;display:none;align-items:center;justify-content:center}
+.file-item:hover .fd{display:flex}.fd:hover{background:#ef4444;color:#fff}
+.empty-state{text-align:center;padding:20px 12px;color:#475569;font-size:12px;line-height:1.8}
+.empty-state .ei{font-size:28px;margin-bottom:6px}
+.recent-list{padding:0 8px}
+.recent-item{display:flex;align-items:center;gap:6px;padding:6px 10px;margin-bottom:1px;border-radius:8px;cursor:pointer;font-size:12px;color:#94a3b8;transition:all 0.15s}
+.recent-item:hover{background:rgba(255,255,255,0.06);color:#e2e8f0}
+.recent-item .ri{flex-shrink:0;color:#64748b}.recent-item .rt{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.recent-item .rp{font-size:10px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;flex-shrink:0;margin-left:4px}
+/* Admin section */
+.admin-sec{border-top:1px solid rgba(255,255,255,0.06);padding:8px 12px 0;margin-top:4px}
+.admin-sec .st{font-size:11px;color:#64748b;font-weight:600;letter-spacing:1px;padding:4px 8px 8px;display:flex;align-items:center;gap:6px}
+.admin-sec .admin-btn{display:block;width:100%;padding:8px 12px;margin-bottom:4px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:6px;color:#94a3b8;font-size:12px;text-align:left;cursor:pointer;transition:all 0.15s}
+.admin-sec .admin-btn:hover{background:rgba(59,130,246,0.1);color:#e2e8f0;border-color:rgba(59,130,246,0.3)}
+.sidebar-ft{padding:10px 14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:6px;margin-top:auto}
+.sidebar-ft button{flex:1;padding:9px;font-size:12px;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all 0.15s}
+.btn-up{background:var(--accent);color:#fff}.btn-up:hover{background:var(--accent-hover)}
+.btn-qr{background:rgba(255,255,255,0.08);color:#c8d2e0}.btn-qr:hover{background:rgba(255,255,255,0.14)}
+.main-area{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+.top-bar{padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.top-bar .tl{font-size:14px;font-weight:600}.top-bar .acts{display:flex;align-items:center;gap:6px}
+.top-bar .acts button{width:32px;height:32px;border:1px solid var(--border);background:var(--surface);color:var(--text2);border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.top-bar .acts button:hover{background:var(--bg)}.menu-btn{display:none}
+.chat-scroll{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;align-items:center}
+.chat-scroll::-webkit-scrollbar{width:4px}.chat-scroll::-webkit-scrollbar-thumb{background:var(--text3);border-radius:2px}
+.chat-inner{width:100%;max-width:780px}
+.welcome{display:flex;flex-direction:column;align-items:center;text-align:center;padding:36px 0 16px}
+.welcome .wi{font-size:56px;margin-bottom:10px}.welcome h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.welcome .ws{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:560px}
+.pill{padding:8px 16px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:18px;cursor:pointer;color:var(--text);transition:all 0.15s;white-space:nowrap}
+.pill:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+#chatArea{display:flex;flex-direction:column;gap:16px;width:100%}
+.user-msg{align-self:flex-end;max-width:78%;padding:12px 16px;border-radius:var(--radius);font-size:15px;line-height:1.7;background:var(--accent);color:#fff;border-bottom-right-radius:4px;animation:fadeIn 0.2s}
+.assistant-msg{align-self:flex-start;max-width:82%;padding:20px 22px;border-radius:8px;font-size:15px;line-height:1.85;letter-spacing:0.3px;background:#fff;border:1px solid #f1f5f9;color:#1e293b;white-space:pre-wrap;box-shadow:none;animation:fadeIn 0.2s}
+[data-theme="dark"] .assistant-msg{background:#1a1a2a;border-color:#252540;color:#c8d2e0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.assistant-msg h3,.assistant-msg h4{margin:32px 0 16px;font-size:18px;font-weight:700;color:#0f172a;line-height:1.4}
+[data-theme="dark"] .assistant-msg h3{color:#93c5fd}
+.assistant-msg ul,.assistant-msg ol{margin:8px 0 16px;padding-left:28px}
+.assistant-msg li{margin-bottom:12px;line-height:1.85}.assistant-msg li:last-child{margin-bottom:0}
+.assistant-msg code{background:#f1f5f9;padding:2px 6px;border-radius:3px;font-size:13px;font-family:monospace;color:inherit}
+[data-theme="dark"] .assistant-msg code{background:#252540}
+.assistant-msg pre{margin:12px 0;padding:14px 16px;background:#f8fafc;border-radius:6px;overflow-x:auto;font-size:13px;line-height:1.6}
+[data-theme="dark"] .assistant-msg pre{background:#12121f}.assistant-msg pre code{background:none;padding:0}
+.assistant-msg strong{font-weight:700;color:#0f172a;background:#f8fafc;padding:2px 5px;border-radius:3px}
+[data-theme="dark"] .assistant-msg strong{color:#e2e8f0;background:#1a1a30}
+.assistant-msg blockquote{margin:12px 0;padding:12px 16px;background:#f8fafc;border-left:3px solid #e2e8f0;font-style:italic;color:#64748b;font-size:14px}
+[data-theme="dark"] .assistant-msg blockquote{background:#12121f;border-color:#252540;color:#777}
+.assistant-msg hr{margin:20px 0;border:none;border-top:1px solid #f1f5f9}
+.assistant-msg p{margin:8px 0}.assistant-msg p:first-child{margin-top:0}.assistant-msg p:last-child{margin-bottom:0}
+.source-foot{margin-top:24px;padding:12px 14px;background:#f8fafc;border-radius:6px;font-size:12px;color:#94a3b8;line-height:1.7}
+[data-theme="dark"] .source-foot{background:#12121f;color:#555}
+.source-foot .src-item{display:block;margin:0 0 10px;padding:8px 10px;border-left:3px solid #bfdbfe;background:rgba(255,255,255,0.72);border-radius:6px;cursor:pointer}
+[data-theme="dark"] .source-foot .src-item{background:rgba(255,255,255,0.03);border-left-color:#334155}
+.source-foot .src-item:hover{border-left-color:#2563eb}
+.source-foot .src-tag{display:block;color:#334155;font-weight:700;text-decoration:none}
+[data-theme="dark"] .source-foot .src-tag{color:#dbeafe}
+.source-foot .src-meta{margin-top:2px;font-size:11px;color:#64748b}
+.source-foot .src-snippet{margin-top:4px;font-size:11px;color:#475569;line-height:1.55}
+[data-theme="dark"] .source-foot .src-meta,[data-theme="dark"] .source-foot .src-snippet{color:#94a3b8}
+.assistant-msg .typing-dots{display:flex;gap:4px;padding:4px 0}
+.assistant-msg .typing-dots span{width:6px;height:6px;background:#c0c4cc;border-radius:50%;animation:bounce 1.4s infinite ease-in-out}
+.assistant-msg .typing-dots span:nth-child(2){animation-delay:0.2s}.assistant-msg .typing-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
+.search-wrap{padding:10px 18px 18px;background:linear-gradient(transparent,var(--bg) 30%);flex-shrink:0;display:flex;justify-content:center}
+.search-bar{display:flex;gap:8px;align-items:center;background:var(--surface);border:2px solid var(--border);border-radius:28px;padding:4px 4px 4px 18px;width:100%;max-width:780px;transition:border-color 0.2s}
+.search-bar:focus-within{border-color:var(--accent)}
+.mode-select{flex:0 0 94px;border:none;outline:none;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:700;padding:10px 8px;border-radius:18px;appearance:none;-webkit-appearance:none;-moz-appearance:none;cursor:pointer}
+[data-theme="dark"] .mode-select{background:#16213a;color:#93c5fd}
+.search-bar input{flex:1;border:none;outline:none;font-size:15px;padding:10px 0;background:transparent;color:var(--text);min-width:0}
+.search-bar input::placeholder{color:var(--text3)}
+.search-bar .sbtn{width:42px;height:42px;border:none;background:var(--accent);color:#fff;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.sbtn:hover{background:var(--accent-hover)}.sbtn:disabled{opacity:0.4}
+.trace-foot{margin-top:14px;padding:10px 12px;background:#f8fafc;border-radius:6px;font-size:11px;color:#64748b;line-height:1.7}
+[data-theme="dark"] .trace-foot{background:#12121f;color:#8892b8}
+.trace-foot .trace-tag{display:inline-flex;align-items:center;gap:4px;margin-right:8px;margin-bottom:6px;padding:2px 8px;border-radius:999px;background:rgba(37,99,235,0.08);color:#2563eb;white-space:nowrap}
+[data-theme="dark"] .trace-foot .trace-tag{background:rgba(59,130,246,0.16);color:#93c5fd}
+.trace-foot .trace-line{margin-top:4px;color:var(--text2)}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:299}.modal-overlay.show{display:block}
+.modal-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:0 16px 48px rgba(0,0,0,0.2);z-index:300;width:440px;max-width:92vw;max-height:85vh;overflow-y:auto}.modal-popup.show{display:block}
+.modal-popup h3{margin:0 0 16px;font-size:16px;color:var(--text)}
+.modal-popup label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:600}
+.modal-popup input,.modal-popup select{width:100%;padding:10px 12px;font-size:14px;border:2px solid var(--border);border-radius:8px;outline:none;margin-bottom:12px;background:var(--surface);color:var(--text)}
+.modal-popup input:focus,.modal-popup select:focus{border-color:var(--accent)}
+.modal-popup .btn-row{display:flex;gap:8px;margin-top:4px}
+.modal-popup .btn-row button{flex:1;padding:10px;font-size:14px;font-weight:600;border:none;border-radius:8px;cursor:pointer}
+.modal-popup .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-hover)}
+.modal-popup .btn-secondary{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.modal-popup .btn-secondary:hover{background:var(--border)}
+.modal-popup .result-box{margin-top:12px;padding:12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;font-size:13px;line-height:1.8;display:none}
+.modal-popup .result-box code{background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-family:monospace;font-size:13px}
+.audit-table{width:100%;font-size:12px;border-collapse:collapse;margin-top:8px}
+.audit-table th,.audit-table td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left}
+.audit-table th{color:var(--text2);font-weight:600}.audit-table td{color:var(--text)}
+.permission-empty{padding:24px 16px;text-align:center;color:var(--warn)}
+.permission-empty .pe-icon{font-size:36px;margin-bottom:8px}
+.quota-info{font-size:11px;color:var(--text2);margin-left:4px}
+
+.qr-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:299}.qr-overlay.show{display:block}
+.qr-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:0 16px 48px rgba(0,0,0,0.2);z-index:300;text-align:center}.qr-popup.show{display:block}
+.qr-popup img{width:200px;height:200px;border-radius:8px;margin-bottom:10px}
+.qr-popup .qu{font-size:12px;color:var(--text2);margin-bottom:4px}.qr-popup .qh{font-size:11px;color:var(--text3)}
+.qr-popup .qc{margin-top:12px;padding:6px 20px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;background:var(--surface);color:var(--text)}
+.toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:400;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:8px;font-size:14px;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,0.2);animation:slideDown 0.3s ease-out;white-space:nowrap}
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.toast.info{background:#3b82f6}.toast.success{background:#22c55e}.toast.warning{background:#e6a23c}.toast.error{background:#ef4444}
+@media(max-width:768px){.sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.menu-btn{display:flex}.sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:19}.sidebar-overlay.show{display:block}.chat-scroll{padding:14px}.search-wrap{padding:10px 14px 16px}.mode-select{flex-basis:78px;font-size:11px;padding:9px 6px}.user-msg{max-width:92%;font-size:14px}.assistant-msg{max-width:94%;font-size:14px}.modal-popup{width:94vw}}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><div class="dot"></div><div><h1>企业知识库平台</h1><div class="sub">Enterprise Knowledge Base</div></div></div>
+  <div class="user-badge"><div><div class="uname" id="sbUser">--</div><div class="urole" id="sbRoleTag">--</div></div><div style="display:flex;gap:4px"><button onclick="showSettings()" style="font-size:10px;background:rgba(255,255,255,0.08);color:#94a3b8;border:none;padding:4px 8px;border-radius:6px;cursor:pointer" title="个人设置">⚙</button><button onclick="logout()" style="font-size:11px;background:rgba(239,68,68,0.15);color:#ef4444;border:none;padding:4px 10px;border-radius:6px;cursor:pointer">退出</button></div></div>
+
+  <!-- 管理面板（仅管理层可见） -->
+  <div class="admin-sec" id="adminSection" style="display:none">
+    <div class="st">⚙️ 系统管理</div>
+    <button class="admin-btn" onclick="showUserMgmt()">👥 用户管理</button>
+    <button class="admin-btn" onclick="showAuditLog()">📋 审计日志</button>
+  </div>
+
+  <div class="sec"><div class="st">📁 共享知识库 <span class="cnt" id="kbCount">0</span></div>
+    <div class="file-list" id="kbFileList"><div class="empty-state"><div class="ei">📂</div>还没有文档，点击下方按钮上传</div></div>
+  </div>
+  <div class="sec"><div class="st">🔒 内部文档 <span class="cnt" id="inCount">0</span></div>
+    <div class="file-list" id="inFileList"><div class="empty-state"><div class="ei">🔐</div>暂无内部文档，上传时选择「内部文档」即可</div></div>
+  </div>
+  <div class="sec"><div class="st">💬 对话历史 <button style="float:right;font-size:10px;padding:2px 8px;background:rgba(255,255,255,0.1);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer" onclick="newConversation()">＋ 新对话</button></div>
+    <div class="recent-list" id="recentList"><div class="empty-state" style="padding:12px">点击「新对话」开始提问</div></div>
+  </div>
+
+  <div style="flex:1"></div>
+  <div class="sidebar-ft">
+    <button class="btn-up" onclick="showUpload()">＋ 上传</button>
+    <button class="btn-qr" onclick="showQR()">📱 手机访问</button>
+  </div>
+</aside>
+
+<!-- 上传弹窗 -->
+<div class="qr-overlay" id="upOverlay" onclick="hideUpload()"></div>
+<div class="qr-popup" id="upPopup" style="text-align:left">
+  <h3 style="margin:0 0 12px;font-size:16px">📤 上传文档</h3>
+  <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--text2)">文档归属</label>
+    <select id="upCollection" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-top:4px">
+      <option value="shared">📁 共享知识库（全员可见）</option>
+      <option value="internal">🔒 内部文档（仅指定角色可见）</option>
+    </select>
+  </div>
+  <div id="upRolesBox" style="display:none;margin-bottom:10px"><label style="font-size:12px;color:var(--text2)">可见范围</label>
+    <select id="upRoles" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-top:4px">
+      <option value="reports">📊 客户日报（业务口+管理层）</option>
+      <option value="progress">📋 工作进度（业务口+管理层）</option>
+      <option value="salary" data-restricted="true">💰 薪酬绩效（仅管理层+人事）</option>
+      <option value="management" data-restricted="true">🔐 仅管理层</option>
+    </select>
+    <div style="font-size:11px;color:var(--warn);margin-top:4px" id="overwriteHint" hidden>⚠ 此文件将覆盖旧版（日报/客户信息表覆盖模式）</div>
+  </div>
+  <button class="btn-up" onclick="document.getElementById('fileInput').click()" style="width:100%;padding:12px;font-size:14px;border-radius:8px">选择文件</button>
+  <button class="qc" onclick="hideUpload()" style="margin-top:10px;width:100%">取消上传</button>
+</div>
+
+<input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.log,.json,.xml,.html,.png,.jpg,.jpeg,.gif,.bmp,.tiff,.tif,.webp" style="display:none" onchange="handleUpload(this.files)">
+
+<!-- 用户管理弹窗（统一：配额+添加+列表+编辑+删除，需二次验密） -->
+<div class="modal-overlay" id="userMgmtOverlay" onclick="hideUserMgmt()"></div>
+<div class="modal-popup" id="userMgmtPopup" style="width:720px;max-width:96vw">
+  <h3>👥 用户管理</h3>
+  <!-- 密码验证门 -->
+  <div id="mgmtGate">
+    <p style="font-size:12px;color:var(--warn);margin-bottom:12px">⚠ 此页面可查看和修改所有用户信息，需要验证管理员密码</p>
+    <label>管理员密码</label>
+    <input type="password" id="mgmtPw" placeholder="请输入您的管理员密码" onkeydown="if(event.key==='Enter')enterUserMgmt()">
+    <div class="btn-row">
+      <button class="btn-primary" onclick="enterUserMgmt()">确认进入</button>
+      <button class="btn-secondary" onclick="hideUserMgmt()">取消</button>
+    </div>
+  </div>
+  <!-- 主内容（验证后显示） -->
+  <div id="mgmtMain" style="display:none">
+    <!-- 角色配额 -->
+    <div style="background:var(--bg);border-radius:8px;padding:10px 14px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">📊 角色人数上限 <button class="btn-primary" onclick="saveQuotasInline()" style="font-size:11px;padding:2px 10px;margin-left:8px">保存配额</button></div>
+      <div id="mgmtQuotas" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+    <!-- 添加用户 -->
+    <div style="margin-bottom:14px">
+      <button class="btn-primary" onclick="toggleAddForm()" style="padding:6px 14px;font-size:13px">＋ 添加用户</button>
+      <div id="mgmtAddForm" style="display:none;margin-top:8px;padding:10px 14px;background:var(--bg);border-radius:8px">
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+          <div><label style="font-size:11px">姓名</label><input type="text" id="mgmtNewName" style="width:110px;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)" placeholder="真实姓名"></div>
+          <div><label style="font-size:11px">角色</label><div id="mgmtNewRole" style="padding:2px 0"></div></div>
+          <button class="btn-primary" onclick="doAddUserInline()" style="padding:6px 14px;font-size:13px">确认添加</button>
+          <button class="btn-secondary" onclick="toggleAddForm()" style="padding:6px 14px;font-size:13px">取消</button>
+        </div>
+        <div id="mgmtAddResult" style="margin-top:6px;font-size:12px"></div>
+      </div>
+    </div>
+    <!-- 用户列表 -->
+    <div style="max-height:40vh;overflow-y:auto">
+      <table class="audit-table">
+        <thead><tr><th>账号</th><th>密码</th><th>姓名</th><th>角色</th><th>权限</th><th>操作</th></tr></thead>
+        <tbody id="mgmtUserTable"><tr><td colspan="6" style="text-align:center;color:var(--text2)">加载中…</td></tr></tbody>
+      </table>
+    </div>
+    <!-- 编辑面板（点击表格"编辑"后展开） -->
+    <div id="mgmtEditPanel" style="display:none;margin-top:12px;padding:14px;background:var(--bg);border-radius:8px">
+      <h4 style="margin:0 0 10px">✏ 编辑用户 <span id="mgmtEditLabel"></span></h4>
+      <input type="hidden" id="mgmtEditOldUsername">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="flex:1;min-width:130px"><label style="font-size:11px">账号</label><input type="text" id="mgmtEditUsername" style="width:100%;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)"></div>
+        <div style="flex:1;min-width:130px"><label style="font-size:11px">姓名</label><input type="text" id="mgmtEditName" style="width:100%;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)"></div>
+        <div style="flex:1;min-width:140px"><label style="font-size:11px">新密码 <span style="font-weight:400;color:var(--text3)">(留空不修改)</span></label><input type="text" id="mgmtEditPw" style="width:100%;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)" placeholder="留空则不修改"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="flex:1;min-width:160px"><label style="font-size:11px">角色</label><select id="mgmtEditRole" size="5" style="width:100%;padding:4px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)"></select></div>
+        <div style="flex:1;min-width:180px"><label style="font-size:11px">可见权限 <span style="font-weight:400;color:var(--text3)">(Ctrl+点击多选)</span></label><select id="mgmtEditCanSee" multiple size="5" style="width:100%;padding:4px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)"></select></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="saveEditUser()">保存修改</button>
+        <button class="btn-secondary" onclick="cancelEditUser()">取消</button>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:14px"><button class="btn-secondary" onclick="hideUserMgmt()">关闭</button></div>
+  </div>
+</div>
+
+<!-- 审计日志弹窗 -->
+<div class="modal-overlay" id="auditOverlay" onclick="hideAuditLog()"></div>
+<div class="modal-popup" id="auditPopup">
+  <h3>📋 审计日志（最近 100 条）</h3>
+  <div id="auditContent">加载中…</div>
+  <div class="btn-row" style="margin-top:12px"><button class="btn-secondary" onclick="hideAuditLog()">关闭</button></div>
+</div>
+
+<!-- 个人设置弹窗 -->
+<div class="modal-overlay" id="settingsOverlay" onclick="hideSettings()"></div>
+<div class="modal-popup" id="settingsPopup">
+  <h3>⚙ 个人设置</h3>
+  <div style="margin-bottom:16px">
+    <label>显示名称</label>
+    <div style="display:flex;gap:4px;align-items:center">
+      <span id="settingsRolePrefix" style="font-size:14px;color:var(--text2);background:var(--bg);padding:10px 8px;border:2px solid var(--border);border-radius:8px 0 0 8px;white-space:nowrap">--</span>
+      <input type="text" id="settingsName" style="margin-bottom:0;flex:1;border-radius:0 8px 8px 0" placeholder="输入姓名">
+      <button class="btn-primary" onclick="doChangeName()" style="width:auto;padding:10px 16px;white-space:nowrap">保存</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">角色标签不可修改，仅可编辑姓名部分</div>
+  </div>
+  <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+  <label>修改密码</label>
+  <input type="password" id="settingsOldPw" placeholder="当前密码">
+  <input type="password" id="settingsNewPw" placeholder="新密码（至少6位）">
+  <div class="btn-row"><button class="btn-primary" onclick="doChangePassword()">修改密码</button></div>
+  <div class="result-box" id="settingsResult"></div>
+  <div class="btn-row" style="margin-top:8px"><button class="btn-secondary" onclick="hideSettings()">关闭</button></div>
+</div>
+
+<div class="main-area">
+  <div class="top-bar">
+    <button class="acts menu-btn" onclick="toggleSidebar()" style="margin-right:8px">☰</button>
+    <div class="tl">💬 智能问答</div>
+    <div class="acts">
+      <span style="font-size:12px;color:var(--text2);margin-right:4px" id="topUser">--</span>
+      <button onclick="toggleTheme()" title="暗色模式">🌙</button>
+    </div>
+  </div>
+
+  <div class="chat-scroll" id="chatScroll"><div class="chat-inner">
+    <div class="welcome" id="welcomeArea">
+      <div class="wi">💡</div><h2 id="welcomeTitle">企业知识库平台</h2>
+      <div class="ws" id="welcomeSub">共享知识库 · 内部文档管理 · 日报查询<br>按角色权限访问，所有操作留痕<br><span style="font-size:11px;color:#94a3b8;">💡 点击左下角 📱 按钮获取二维码，手机也能用</span></div>
+      <div class="pills" id="presetPills">
+        <button class="pill" onclick="send('最近的客户方案有哪些？')">📄 查方案</button>
+        <button class="pill" onclick="send('品牌视觉规范是什么？')">🎨 品牌规范</button>
+        <button class="pill" onclick="send('今天的客户日报')">📊 今日日报</button>
+      </div>
+    </div>
+    <div id="chatArea"></div>
+  </div></div>
+
+  <div class="search-wrap"><div class="search-bar">
+    <select id="modeSelect" class="mode-select" title="检索模式">
+      <option value="auto" selected>自动</option>
+      <option value="fast">快速</option>
+      <option value="balanced">平衡</option>
+      <option value="deep">深度</option>
+      <option value="debug">调试</option>
+    </select>
+    <input type="text" id="chatInput" placeholder="搜方案、查资料、找灵感，按 Enter 发送" onkeydown="if(event.key==='Enter')send()">
+    <button class="sbtn" id="sendBtn" onclick="send()">➤</button>
+  </div></div>
+</div>
+
+<div class="qr-overlay" id="qrOverlay" onclick="hideQR()"></div>
+<div class="qr-popup" id="qrPopup"><img id="qrImg" src="/api/v1/qr"><div class="qu" id="qrUrl"></div><div class="qh">手机扫码，随时随地查资料</div><button class="qc" onclick="hideQR()">关闭</button></div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+if (typeof marked !== 'undefined') marked.setOptions({ breaks: true, gfm: true });
+
+// ---- Markdown 格式修复 ----
+function fixMarkdownTables(text) {
+  // 1. || 拆分粘连行
+  text = text.replace(/\|\|/g, '|\n|');
+  // 2. 表格行列修复（对齐分隔行）
+  text = text.replace(/(\|[^|\n]+(\|[^|\n]+)+\|)\s*\n\s*(\|[-\s:|]+\|)/g, function(m, header, _h2, sep) {
+    var hcols = header.split('|').filter(function(c){return c.trim().length>0;}).length;
+    var parts = []; for (var i=0; i<hcols; i++) parts.push('---');
+    return header + '\n|' + parts.join('|') + '|';
+  });
+  text = text.replace(/(\|[-\s:|]+\|)([^|\n]*\|[^|\n]+\|)/g, '$1\n$2');
+  text = text.replace(/(\S)\n(\|[^\n]+\|)/g, '$1\n\n$2');
+  text = text.replace(/(\|[^\n]+\|)\n(\S)/g, '$1\n\n$2');
+  // 3. 列表条目粘连拆分：- data ｜ data- data ｜ data → 各自独立行
+  text = text.replace(/([^\n])(-\s*\d{4}-\d{2}-\d{2}\s*[｜\|])/g, '$1\n$2');
+  return text;
+}
+
+function escapeHtml(text) {
+  return String(text || '').replace(/[&<>"']/g, function(ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+  });
+}
+
+function formatMs(ms) {
+  if (ms === null || ms === undefined || isNaN(ms)) return '--';
+  if (ms >= 1000) return (ms / 1000).toFixed(2) + 's';
+  return Math.round(ms) + 'ms';
+}
+
+function renderTraceFoot(trace) {
+  if (!trace) return '';
+  var chips = [];
+  chips.push('<span class="trace-tag">模式：' + escapeHtml(trace.mode_label || trace.mode || '--') + '</span>');
+  if (trace.requested_mode_label && trace.requested_mode && trace.requested_mode !== trace.mode) {
+    chips.push('<span class="trace-tag">请求：' + escapeHtml(trace.requested_mode_label) + '</span>');
+  }
+  chips.push('<span class="trace-tag">总耗时：' + formatMs(trace.total_ms) + '</span>');
+  if (trace.cache) chips.push('<span class="trace-tag">缓存：' + escapeHtml(trace.cache) + '</span>');
+  if (trace.query_variants_count !== undefined) chips.push('<span class="trace-tag">变体：' + escapeHtml(trace.query_variants_count) + '</span>');
+  if (trace.candidate_count !== undefined) chips.push('<span class="trace-tag">候选：' + escapeHtml(trace.candidate_count) + '</span>');
+  if (trace.final_count !== undefined) chips.push('<span class="trace-tag">返回：' + escapeHtml(trace.final_count) + '</span>');
+  var timing = trace.timing_ms || {};
+  if (timing.query_opt_ms !== undefined) chips.push('<span class="trace-tag">改写：' + formatMs(timing.query_opt_ms) + '</span>');
+  if (timing.retrieval_ms !== undefined) chips.push('<span class="trace-tag">召回：' + formatMs(timing.retrieval_ms) + '</span>');
+  if (timing.load_chunks_ms !== undefined) chips.push('<span class="trace-tag">加载：' + formatMs(timing.load_chunks_ms) + '</span>');
+  if (timing.colbert_ms !== undefined) chips.push('<span class="trace-tag">ColBERT：' + formatMs(timing.colbert_ms) + '</span>');
+  if (timing.reranker_ms !== undefined) chips.push('<span class="trace-tag">精排：' + formatMs(timing.reranker_ms) + '</span>');
+  if (timing.graph_ms !== undefined && timing.graph_ms > 0) chips.push('<span class="trace-tag">图谱：' + formatMs(timing.graph_ms) + '</span>');
+  if (timing.self_rag_ms !== undefined && timing.self_rag_ms > 0) chips.push('<span class="trace-tag">重检索：' + formatMs(timing.self_rag_ms) + '</span>');
+  if (trace.graph_context_used) chips.push('<span class="trace-tag">图谱命中</span>');
+  if (trace.self_rag_triggered) chips.push('<span class="trace-tag">已重检索</span>');
+  var lines = [];
+  if (trace.flags) {
+    var flagNames = [];
+    if (trace.flags.query_rewrite) flagNames.push('改写');
+    if (trace.flags.hyde) flagNames.push('HyDE');
+    if (trace.flags.multi_query) flagNames.push('多查询');
+    if (trace.flags.query_decompose) flagNames.push('分解');
+    if (trace.flags.late_interaction) flagNames.push('ColBERT');
+    if (trace.flags.self_rag) flagNames.push('Self-RAG');
+    if (trace.flags.graph_rag) flagNames.push('GraphRAG');
+    if (flagNames.length) lines.push('策略：' + flagNames.join(' · '));
+  }
+  if (trace.requested_mode_label && trace.requested_mode_description && trace.requested_mode !== trace.mode) {
+    lines.push('请求模式：' + trace.requested_mode_label + ' · ' + trace.requested_mode_description);
+    lines.push('实际模式：' + trace.mode_label + ' · ' + trace.mode_description);
+  }
+  if (trace.requested_mode === 'auto') {
+    lines.push('自动模式：已根据问题类型选择 ' + trace.mode_label + ' 档');
+  }
+  if (trace.query_variants && trace.query_variants.length && (trace.mode === 'deep' || trace.mode === 'debug')) {
+    lines.push('变体：' + trace.query_variants.map(function(q) { return '「' + q + '」'; }).join('、'));
+  }
+  if (trace.phase) {
+    lines.push('阶段：改写 ' + formatMs(trace.phase.query_opt) +
+      ' · 召回 ' + formatMs(trace.phase.retrieval) +
+      ' · 加载 ' + formatMs(trace.phase.load_chunks) +
+      ' · 精排 ' + formatMs(trace.phase.reranker) +
+      ' · 总计 ' + formatMs(trace.total_ms));
+  }
+  var html = '<div class="trace-foot">' + chips.join('');
+  if (lines.length) html += '<div class="trace-line">' + lines.map(escapeHtml).join('<br>') + '</div>';
+  html += '</div>';
+  return html;
+}
+
+// ---- Auth helpers ----
+function getToken() { return sessionStorage.getItem('auth_token') || ''; }
+function getUser() { return { name: sessionStorage.getItem('user_name') || '', role: sessionStorage.getItem('user_role') || '', can_see: JSON.parse(sessionStorage.getItem('user_can_see') || '["shared"]') }; }
+if (!getToken()) window.location.href = '/login.html';
+
+var ROLE_LABELS = { management: '管理层', hr: '人事行政', manager: '业务经理', sales: '业务员', telemarketing: '电销部' };
+var PERM_LABELS = { shared: '共享知识库', reports: '客户日报', progress: '工作进度', salary: '薪酬绩效' };
+var WELCOME_BY_ROLE = {
+  management: '您拥有完整的管理权限，可查看并管理全部文档与系统设置。',
+  hr: '您负责共享知识库与薪酬绩效类文档的维护与查阅。',
+  manager: '您可查看业务口全部资料，并管理团队文档。',
+  sales: '您可查阅客户方案与项目进度，上传业务相关资料。',
+  telemarketing: '您可查看共享资料库与客户日报，上传日常工作文档。'
+};
+
+var user = getUser();
+var roleLabel = ROLE_LABELS[user.role] || user.role;
+// 去掉姓名里的角色前缀避免重复（"管理层-赵总" → "赵总"）
+var displayName = user.name;
+var prefix = roleLabel + '-';
+if (displayName.indexOf(prefix) === 0) displayName = displayName.slice(prefix.length);
+var identityText = roleLabel + ' — ' + displayName;
+
+// 身份显示
+document.getElementById('sbUser').textContent = displayName;
+document.getElementById('sbRoleTag').textContent = roleLabel;
+document.getElementById('topUser').textContent = identityText;
+
+// 欢迎语（按时间段切换问候）
+var hour = new Date().getHours();
+var greeting = hour < 6 ? '夜深了，' : hour < 9 ? '早上好，' : hour < 12 ? '上午好，' : hour < 14 ? '中午好，' : hour < 18 ? '下午好，' : '晚上好，';
+document.getElementById('welcomeTitle').textContent = greeting + identityText;
+document.getElementById('welcomeSub').innerHTML = (WELCOME_BY_ROLE[user.role] || '') + '<br>方案文档 · 客户资料 · 创意简报 · 智能检索';
+
+// 管理面板
+if (user.role === 'management') {
+  document.getElementById('adminSection').style.display = 'block';
+}
+
+function logout() { sessionStorage.clear(); window.location.href = '/login.html'; }
+function api(method, path, body) {
+  var opts = { method: method, headers: { 'Content-Type': 'application/json', 'X-Auth-Token': getToken() } };
+  if (body) opts.body = JSON.stringify(body);
+  return fetch('/api/v1' + path, opts);
+}
+
+function showNotification(msg, type) {
+  var el = document.createElement('div'); el.className = 'toast ' + (type||'info'); el.textContent = msg;
+  document.getElementById('toastWrap').appendChild(el);
+  setTimeout(function() { el.remove(); }, 3500);
+}
+
+// ---- Sidebar ----
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+document.getElementById('sidebar').addEventListener('click', function(e) { if (e.target.closest('.file-item') || e.target.closest('.recent-item')) setTimeout(closeSidebar, 200); });
+
+// ---- Theme ----
+function toggleTheme() {
+  var d = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', d ? '' : 'dark');
+  localStorage.setItem('sop_theme', d ? '' : 'dark');
+}
+if (localStorage.getItem('sop_theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+
+var modeSelect = document.getElementById('modeSelect');
+if (modeSelect) {
+  var savedMode = localStorage.getItem('rag_mode') || 'auto';
+  if (modeSelect.querySelector('option[value="'+savedMode+'"]')) modeSelect.value = savedMode;
+  modeSelect.addEventListener('change', function() {
+    localStorage.setItem('rag_mode', this.value);
+  });
+}
+
+// ---- QR ----
+async function showQR() {
+  document.getElementById('qrImg').src = '/api/v1/qr?' + Date.now();
+  try {
+    var r = await fetch('/api/v1/qr-url'); var d = await r.json();
+    document.getElementById('qrUrl').textContent = d.url;
+  } catch(e) { document.getElementById('qrUrl').textContent = ''; }
+  document.getElementById('qrOverlay').classList.add('show');
+  document.getElementById('qrPopup').classList.add('show');
+}
+function hideQR() { document.getElementById('qrOverlay').classList.remove('show'); document.getElementById('qrPopup').classList.remove('show'); }
+
+// ---- Upload ----
+function showUpload() {
+  document.getElementById('upOverlay').classList.add('show');
+  document.getElementById('upPopup').classList.add('show');
+  document.getElementById('upCollection').onchange = function() {
+    var isInternal = this.value === 'internal';
+    document.getElementById('upRolesBox').style.display = isInternal ? 'block' : 'none';
+    if (isInternal) updateOverwriteHint();
+  };
+  // 按权限过滤 access_roles 下拉
+  var roleSelect = document.getElementById('upRoles'), u = getUser();
+  for (var i = 0; i < roleSelect.options.length; i++) {
+    var opt = roleSelect.options[i];
+    if (u.role === 'management') { opt.style.display = ''; }
+    else if (u.can_see.indexOf(opt.value) !== -1) { opt.style.display = ''; }
+    else { opt.style.display = 'none'; }
+  }
+  roleSelect.selectedIndex = 0;
+  document.getElementById('overwriteHint').hidden = true;
+  document.getElementById('upRoles').onchange = updateOverwriteHint;
+}
+
+function updateOverwriteHint() {
+  var fn = ''; // 将在选择文件后显示
+  var roles = document.getElementById('upRoles').value;
+  var hint = document.getElementById('overwriteHint');
+  // 仅在 reports 类型时提示覆盖
+  hint.hidden = true;
+}
+
+function hideUpload() { document.getElementById('upOverlay').classList.remove('show'); document.getElementById('upPopup').classList.remove('show'); }
+
+var OVERWRITE_PATTERNS = ['客户信息表', '每日报表'];
+function isOverwriteFile(name) { return OVERWRITE_PATTERNS.some(function(p) { return name.indexOf(p) !== -1; }); }
+
+var iconMap = { pdf:['📄','pdf'], doc:['📝','word'], docx:['📝','word'], xls:['📊','excel'], xlsx:['📊','excel'], ppt:['📽️','ppt'], pptx:['📽️','ppt'], txt:['📃','other'], md:['📃','other'], csv:['📊','excel'] };
+
+// ---- File list ----
+async function loadFileList() {
+  try {
+    var docs = await (await api('GET', '/documents')).json();
+    var kb = [], internal = [];
+    docs.forEach(function(d) { if (d.collection && d.collection.indexOf('internal') !== -1) internal.push(d); else kb.push(d); });
+    document.getElementById('kbCount').textContent = kb.length;
+    document.getElementById('inCount').textContent = internal.length;
+    var kbList = document.getElementById('kbFileList');
+    var inList = document.getElementById('inFileList');
+
+    if (kb.length === 0 && internal.length === 0) {
+      // 检查是否完全没有可见文档
+      kbList.innerHTML = '<div class="permission-empty"><div class="pe-icon">🔒</div><div>暂无可见内容</div><div style="font-size:11px;margin-top:4px">您的角色暂无可查看的文档，请联系管理员为您分配知识库权限</div></div>';
+      inList.innerHTML = '';
+    } else {
+      kbList.innerHTML = kb.length ? renderFileItems(kb) : '<div class="empty-state"><div class="ei">📂</div>暂无共享文档</div>';
+      inList.innerHTML = internal.length ? renderFileItems(internal) : '<div class="empty-state"><div class="ei">🔐</div>暂无内部文档</div>';
+    }
+  } catch(e) { console.error(e); }
+}
+
+function renderFileItems(docs) {
+  return docs.map(function(d) {
+    var ext = (d.file_type || d.file_name.split('.').pop()).toLowerCase().replace('.','');
+    var fi = iconMap[ext] || ['📎','other'];
+    return '<div class="file-item" data-hash="'+d.file_hash+'" onclick="previewDoc(\''+d.file_hash+'\',\''+d.file_name.replace(/'/g,"\\'")+'\')">'
+      + '<div class="fi '+fi[1]+'">'+fi[0]+'</div><div class="finfo"><div class="fn">'+d.file_name+'</div><div class="fm">'+d.chunk_count+' 片段'+(d.total_pages>0?' · '+d.total_pages+'页':'')+(d.report_date?' · '+d.report_date:'')+'</div></div>'
+      + '<button class="fd" onclick="event.stopPropagation();deleteDoc(\''+d.file_hash+'\',\''+d.file_name.replace(/'/g,"\\'")+'\')">✕</button></div>';
+  }).join('');
+}
+
+function highlightFileInSidebar(hash) {
+  document.querySelectorAll('.file-item').forEach(function(el) { el.classList.remove('active'); });
+  if (!hash) return;
+  var el = document.querySelector('.file-item[data-hash="'+hash+'"]');
+  if (el) { el.classList.add('active'); el.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+}
+
+function previewDoc(hash, name) {
+  document.getElementById('welcomeArea').style.display = 'none';
+  highlightFileInSidebar(hash);
+  window.open('/api/v1/file/' + hash + '?token=' + getToken(), '_blank');
+}
+
+async function deleteDoc(hash, name) {
+  if (!confirm('确定删除「'+name+'」？')) return;
+  try {
+    var r = await api('DELETE', '/document/' + hash);
+    if (!r.ok) { var e = await r.json(); throw new Error(e.detail); }
+    showNotification('已删除「'+name+'」', 'success'); loadFileList();
+  } catch(e) { showNotification('删除失败: '+e.message, 'error'); }
+}
+
+function handleUpload(files) {
+  if (!files || !files.length) return;
+  var collection = document.getElementById('upCollection').value;
+  var roles = collection === 'internal' ? document.getElementById('upRoles').value : '';
+  Array.from(files).forEach(async function(f) {
+    var overwrite = collection === 'internal' && isOverwriteFile(f.name);
+    var msg = overwrite ? '⏳ 正在覆盖更新「'+f.name+'」…' : '⏳ 正在处理「'+f.name+'」…';
+    showNotification(msg, 'info');
+    try {
+      var fd = new FormData(); fd.append('file', f); fd.append('collection', collection);
+      if (roles) fd.append('access_roles', roles);
+      var r = await fetch('/api/v1/document/upload', { method:'POST', headers:{'X-Auth-Token':getToken()}, body:fd });
+      var d = await r.json();
+      if (!r.ok) showNotification(d.detail || '上传失败', 'error');
+      else showNotification(d.message, d.overwritten ? 'warning' : 'success');
+    } catch(e) { showNotification('上传失败: '+e.message, 'error'); }
+  });
+  document.getElementById('fileInput').value = ''; hideUpload(); loadFileList();
+}
+
+// ---- Conversations (ChatGPT-style multi-turn) ----
+var currentConvId = null;
+var _convCache = [];
+
+function convId() { return 'c_' + Date.now(); }
+
+function newConversation() {
+  currentConvId = convId();
+  document.getElementById('chatArea').innerHTML = '';
+  document.getElementById('welcomeArea').style.display = 'flex';
+}
+
+async function loadConversations() {
+  var c = document.getElementById('recentList');
+  try {
+    var r = await api('GET', '/conversations'); var d = await r.json();
+    _convCache = d.conversations || [];
+    if (!_convCache.length) { c.innerHTML = '<div class="empty-state" style="padding:12px">暂无对话记录</div>'; return; }
+    c.innerHTML = _convCache.map(function(cv) {
+      var t = (cv.title || '新对话').replace(/"/g, '&quot;');
+      return '<div class="recent-item" onclick="openConversation(\''+cv.id+'\')"><span class="ri">💬</span><span class="rt">'+t+'</span><span style="font-size:10px;color:#475569">'+cv.n+'条</span><button class="fd" style="display:inline-flex;margin-left:auto" onclick="event.stopPropagation();deleteConversation(\''+cv.id+'\')">✕</button></div>';
+    }).join('');
+  } catch(e) { c.innerHTML = '<div class="empty-state" style="padding:12px">加载失败</div>'; }
+}
+
+async function deleteConversation(id) {
+  try {
+    await api('DELETE', '/conversations/' + id);
+    if (currentConvId === id) { currentConvId = null; document.getElementById('chatArea').innerHTML = ''; document.getElementById('welcomeArea').style.display = 'flex'; }
+    loadConversations();
+  } catch(e) {}
+}
+
+async function openConversation(id) {
+  try {
+    var r = await api('GET', '/conversations/' + id); var cv = await r.json();
+    currentConvId = cv.id;
+    var chatArea = document.getElementById('chatArea');
+    chatArea.innerHTML = '';
+    document.getElementById('welcomeArea').style.display = 'none';
+    cv.msgs.forEach(function(m) {
+      if (m.r === 'u') {
+        var ud = document.createElement('div'); ud.className = 'user-msg'; ud.textContent = m.c; chatArea.appendChild(ud);
+      } else {
+        var ad = document.createElement('div'); ad.className = 'assistant-msg';
+        if (typeof marked !== 'undefined') ad.innerHTML = marked.parse(fixMarkdownTables(m.c));
+        else ad.textContent = m.c;
+        chatArea.appendChild(ad);
+      }
+    });
+    document.getElementById('chatScroll').scrollTop = document.getElementById('chatScroll').scrollHeight;
+  } catch(e) {}
+}
+
+async function saveConversation() {
+  if (!currentConvId) return;
+  var msgs = [];
+  document.getElementById('chatArea').querySelectorAll('.user-msg,.assistant-msg').forEach(function(el) {
+    if (el.classList.contains('user-msg')) {
+      msgs.push({ r: 'u', c: el.textContent });
+    } else {
+      // 跳过空回答和「正在输入」的占位动画
+      var txt = el.textContent.trim();
+      if (!txt || el.querySelector('.typing-dots')) return;
+      msgs.push({ r: 'a', c: el.innerHTML });
+    }
+  });
+  if (!msgs.length) return;
+  var title = '';
+  for (var i = 0; i < msgs.length; i++) { if (msgs[i].r === 'u') { title = msgs[i].c.substring(0, 40); break; } }
+  try { await api('POST', '/conversations', { id: currentConvId, title: title, msgs: msgs }); loadConversations(); } catch(e) {}
+}
+
+// ---- Chat ----
+var isStreaming = false;
+async function send(presetQuery, isPreview) {
+  if (isStreaming && !isPreview) return;
+  var input = document.getElementById('chatInput'), query = presetQuery || input.value.trim();
+  var mode = (document.getElementById('modeSelect') && document.getElementById('modeSelect').value) || localStorage.getItem('rag_mode') || 'auto';
+  if (!query) return; if (!presetQuery) input.value = '';
+  if (!currentConvId) currentConvId = convId();
+  document.getElementById('welcomeArea').style.display = 'none';
+  var chatArea = document.getElementById('chatArea'), sendBtn = document.getElementById('sendBtn');
+  input.disabled = true; sendBtn.disabled = true; isStreaming = true;
+
+  var ud = document.createElement('div'); ud.className = 'user-msg'; ud.textContent = query; chatArea.appendChild(ud);
+  saveConversation();  // 立刻保存用户提问，防止刷新丢失
+  var ad = document.createElement('div'); ad.className = 'assistant-msg'; ad.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>'; chatArea.appendChild(ad);
+  document.getElementById('chatScroll').scrollTop = document.getElementById('chatScroll').scrollHeight;
+
+  try {
+    var resp = await api('POST', '/chat/stream', { query: query, top_k: 5, mode: mode });
+    var reader = resp.body.getReader(), decoder = new TextDecoder(), buffer = '', aiText = '', sourcesHtml = '', traceHtml = '';
+    while (true) {
+      var chunk = await reader.read(); if (chunk.done) break;
+      buffer += decoder.decode(chunk.value, {stream:true}); var lines = buffer.split('\n'); buffer = lines.pop() || '';
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i]; if (!line.startsWith('data: ')) continue; var data = line.slice(6);
+        if (data === '[DONE]') continue;
+        if (data.startsWith('[SOURCES]')) {
+          try {
+            var sources = JSON.parse(data.slice(9, -10)), foot = '<div class="source-foot">';
+            sources.forEach(function(s, idx) {
+              var label = '[来源'+(idx+1)+'] '+s.file_name;
+              var meta = [];
+              if (s.page && s.page > 0) meta.push('第'+s.page+'页');
+              if (s.chunk_index !== undefined && s.chunk_index !== null) meta.push('chunk '+s.chunk_index);
+              var snippet = s.snippet || '';
+              foot += '<div class="src-item" onclick="event.stopPropagation();highlightFileInSidebar(\''+s.file_hash+'\');window.open(\'/api/v1/file/'+s.file_hash+'?token='+getToken()+'\',\'_blank\')" title="'+s.file_name+'">'
+                + '<div class="src-tag">'+label+'</div>'
+                + '<div class="src-meta">'+meta.join(' · ')+'</div>'
+                + (snippet ? '<div class="src-snippet">'+escapeHtml(snippet)+'</div>' : '')
+                + '</div>';
+            });
+            foot += '</div>'; sourcesHtml = foot;
+          } catch(e) {}
+        } else if (data.startsWith('[TRACE]')) {
+          try {
+            var trace = JSON.parse(data.slice(7, -8));
+            traceHtml = renderTraceFoot(trace);
+          } catch(e) {}
+        } else if (data.startsWith('[ERROR]')) { aiText += '<span style="color:var(--danger)">⚠️ '+data.slice(7)+'</span>'; }
+        else { aiText += data; }
+        var rendered = aiText; if (typeof marked !== 'undefined') { rendered = fixMarkdownTables(rendered); rendered = marked.parse(rendered); }
+        else rendered = aiText.replace(/\n/g, '<br>');
+        ad.innerHTML = rendered + sourcesHtml + traceHtml;
+        document.getElementById('chatScroll').scrollTop = document.getElementById('chatScroll').scrollHeight;
+      }
+    }
+    if (!ad.textContent.trim()) ad.innerHTML = '（知识库中暂未找到相关内容，试试换个问法？）';
+    saveConversation();
+  } catch(e) { ad.innerHTML = '❌ 请求失败: '+e.message; }
+  input.disabled = false; sendBtn.disabled = false; isStreaming = false; input.focus();
+  document.getElementById('chatScroll').scrollTop = document.getElementById('chatScroll').scrollHeight;
+}
+
+// ---- Unified User Management ----
+var mgmtData = null;  // { users, role_counts, role_info }
+
+function showUserMgmt() {
+  document.getElementById('userMgmtOverlay').classList.add('show');
+  document.getElementById('userMgmtPopup').classList.add('show');
+  document.getElementById('mgmtPw').value = '';
+  document.getElementById('mgmtGate').style.display = 'block';
+  document.getElementById('mgmtMain').style.display = 'none';
+  mgmtData = null;
+}
+
+function hideUserMgmt() {
+  document.getElementById('userMgmtOverlay').classList.remove('show');
+  document.getElementById('userMgmtPopup').classList.remove('show');
+  mgmtData = null;
+}
+
+async function enterUserMgmt() {
+  var pw = document.getElementById('mgmtPw').value;
+  if (!pw) { showNotification('请输入管理员密码', 'error'); return; }
+  try {
+    var r = await api('POST', '/admin/users-full', { password: pw });
+    var d = await r.json();
+    if (!r.ok) { showNotification(d.detail || '密码错误', 'error'); return; }
+    // Also load role info
+    var r2 = await api('GET', '/admin/users');
+    var d2 = await r2.json();
+    mgmtData = { users: d.users, role_counts: d2.role_counts, role_info: d2.role_info };
+    document.getElementById('mgmtGate').style.display = 'none';
+    document.getElementById('mgmtMain').style.display = 'block';
+    renderMgmtQuotas();
+    renderMgmtUsers();
+    // Populate add form role radios
+    var rolesHtml = '';
+    Object.keys(mgmtData.role_info).forEach(function(r) {
+      var cur = mgmtData.role_counts[r] || 0, max = mgmtData.role_info[r].max;
+      rolesHtml += '<div style="margin-bottom:2px"><label style="font-size:12px;cursor:pointer;font-weight:normal"><input type="radio" name="mgmtNewRole" value="'+r+'"> '+mgmtData.role_info[r].label+' ('+cur+'/'+max+')</label></div>';
+    });
+    document.getElementById('mgmtNewRole').innerHTML = rolesHtml;
+  } catch(e) { showNotification('验证失败: '+e.message, 'error'); }
+}
+
+function renderMgmtQuotas() {
+  var d = mgmtData, html = '';
+  var rc = d.role_counts, ri = d.role_info;
+  Object.keys(ri).forEach(function(r) {
+    var cur = rc[r] || 0, max = ri[r].max, label = ri[r].label;
+    html += '<span style="display:inline-flex;align-items:center;gap:4px;background:var(--surface);padding:4px 10px;border-radius:6px;font-size:12px;white-space:nowrap">';
+    html += '<b>'+label+'</b>';
+    html += '<button onclick="adjQuota(\''+r+'\',-1)" style="width:20px;height:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;cursor:pointer;font-size:12px;line-height:1"'+(max<=cur?' disabled':'')+'>−</button>';
+    html += '<span style="min-width:16px;text-align:center;font-weight:700">'+max+'</span>';
+    html += '<button onclick="adjQuota(\''+r+'\',1)" style="width:20px;height:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;cursor:pointer;font-size:12px;line-height:1">+</button>';
+    html += '<span style="color:var(--text2);font-size:10px">'+cur+'人</span>';
+    if (max <= cur) html += '<span style="color:var(--danger);font-size:10px">⚠满</span>';
+    html += '</span>';
+  });
+  document.getElementById('mgmtQuotas').innerHTML = html;
+}
+
+function adjQuota(role, delta) {
+  if (!mgmtData) return;
+  var newMax = mgmtData.role_info[role].max + delta;
+  if (newMax < (mgmtData.role_counts[role]||0)) return;
+  mgmtData.role_info[role].max = newMax;
+  renderMgmtQuotas();
+}
+
+async function saveQuotasInline() {
+  if (!mgmtData) return;
+  var payload = {};
+  Object.keys(mgmtData.role_info).forEach(function(r) { payload[r] = mgmtData.role_info[r].max; });
+  try {
+    var r = await api('PUT', '/admin/roles', payload);
+    var d = await r.json();
+    if (!r.ok) { showNotification(d.detail || '保存失败', 'error'); return; }
+    showNotification('配额已更新', 'success');
+    // Refresh counts
+    var r2 = await api('GET', '/admin/users');
+    var d2 = await r2.json();
+    mgmtData.role_counts = d2.role_counts;
+    mgmtData.role_info = d2.role_info;
+    renderMgmtQuotas();
+    renderMgmtUsers();
+  } catch(e) { showNotification('保存失败: '+e.message, 'error'); }
+}
+
+function renderMgmtUsers() {
+  var users = mgmtData.users;
+  var html = '';
+  users.forEach(function(u) {
+    html += '<tr>';
+    html += '<td><code>'+u.username+'</code></td>';
+    html += '<td><code style="font-size:11px">'+u.password+'</code></td>';
+    html += '<td>'+u.name+'</td>';
+    html += '<td>'+(ROLE_LABELS[u.role]||u.role)+'</td>';
+    html += '<td style="font-size:10px">'+u.can_see.map(function(p){return PERM_LABELS[p]||p;}).join(', ')+'</td>';
+    html += '<td style="white-space:nowrap">';
+    html += '<button onclick="startEditUser(\''+u.username+'\')" style="font-size:11px;background:var(--accent);color:#fff;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;margin-right:4px">编辑</button>';
+    html += '<button onclick="deleteUserConfirm(\''+u.username+'\',\''+u.name.replace(/'/g,"\\'")+'\')" style="font-size:11px;background:var(--danger);color:#fff;border:none;padding:2px 8px;border-radius:4px;cursor:pointer">删除</button>';
+    html += '</td></tr>';
+  });
+  document.getElementById('mgmtUserTable').innerHTML = html;
+}
+
+// ---- Add user (inline) ----
+var addFormVisible = false;
+function toggleAddForm() {
+  addFormVisible = !addFormVisible;
+  document.getElementById('mgmtAddForm').style.display = addFormVisible ? 'block' : 'none';
+  document.getElementById('mgmtAddResult').innerHTML = '';
+  if (addFormVisible) {
+    document.getElementById('mgmtNewName').value = '';
+    var firstRadio = document.querySelector('input[name="mgmtNewRole"]');
+    if (firstRadio) firstRadio.checked = true;
+  }
+}
+
+async function doAddUserInline() {
+  var name = document.getElementById('mgmtNewName').value.trim();
+  var roleEl = document.querySelector('input[name="mgmtNewRole"]:checked');
+  var role = roleEl ? roleEl.value : '';
+  if (!name) { showNotification('请输入姓名', 'error'); return; }
+  try {
+    var r = await api('POST', '/admin/users', { name: name, role: role });
+    var d = await r.json();
+    var box = document.getElementById('mgmtAddResult');
+    if (!r.ok) { box.innerHTML = '❌ ' + (d.detail || '添加失败'); box.style.color = 'var(--danger)'; return; }
+    box.innerHTML = '✅ 已创建 <code>'+d.username+'</code> 密码 <code>'+d.password+'</code>';
+    box.style.color = 'var(--green)';
+    showNotification('用户「'+d.name+'」已创建', 'success');
+    // Refresh
+    var r2 = await api('POST', '/admin/users-full', { password: document.getElementById('mgmtPw').value });
+    var d2 = await r2.json();
+    var r3 = await api('GET', '/admin/users');
+    var d3 = await r3.json();
+    mgmtData.users = d2.users;
+    mgmtData.role_counts = d3.role_counts;
+    mgmtData.role_info = d3.role_info;
+    renderMgmtQuotas();
+    renderMgmtUsers();
+    addFormVisible = false;
+    document.getElementById('mgmtAddForm').style.display = 'none';
+  } catch(e) { showNotification('添加失败: '+e.message, 'error'); }
+}
+
+// ---- Inline Edit User Panel ----
+function startEditUser(username) {
+  var u = mgmtData.users.find(function(x) { return x.username === username; });
+  if (!u) return;
+  document.getElementById('mgmtEditOldUsername').value = username;
+  document.getElementById('mgmtEditLabel').textContent = username;
+  document.getElementById('mgmtEditUsername').value = username;
+  // Extract personal name
+  var roleLabel = ROLE_LABELS[u.role] || u.role;
+  var personalName = u.name;
+  if (personalName.indexOf(roleLabel + '-') === 0) personalName = personalName.slice(roleLabel.length + 1);
+  document.getElementById('mgmtEditName').value = personalName;
+  document.getElementById('mgmtEditPw').value = '';
+  // Role select
+  var roleHtml = '';
+  Object.keys(ROLE_LABELS).forEach(function(r) {
+    var sel = r === u.role ? ' selected' : '';
+    roleHtml += '<option value="'+r+'"'+sel+'>'+ROLE_LABELS[r]+'</option>';
+  });
+  document.getElementById('mgmtEditRole').innerHTML = roleHtml;
+  // Can_see multi-select
+  var allPerms = ['shared', 'reports', 'progress', 'salary'];
+  var permHtml = '';
+  allPerms.forEach(function(p) {
+    var sel = u.can_see.indexOf(p) !== -1 ? ' selected' : '';
+    permHtml += '<option value="'+p+'"'+sel+'>'+ (PERM_LABELS[p]||p) +'</option>';
+  });
+  document.getElementById('mgmtEditCanSee').innerHTML = permHtml;
+  document.getElementById('mgmtEditPanel').style.display = 'block';
+  document.getElementById('mgmtEditPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEditUser() {
+  document.getElementById('mgmtEditPanel').style.display = 'none';
+}
+
+async function saveEditUser() {
+  var oldUsername = document.getElementById('mgmtEditOldUsername').value;
+  var newUsername = document.getElementById('mgmtEditUsername').value.trim();
+  var name = document.getElementById('mgmtEditName').value.trim();
+  var password = document.getElementById('mgmtEditPw').value.trim();
+  var role = document.getElementById('mgmtEditRole').value;
+  var csSel = document.getElementById('mgmtEditCanSee');
+  var canSee = [];
+  for (var i = 0; i < csSel.options.length; i++) {
+    if (csSel.options[i].selected) canSee.push(csSel.options[i].value);
+  }
+  if (!newUsername) { showNotification('账号不能为空', 'error'); return; }
+  if (!name) { showNotification('姓名不能为空', 'error'); return; }
+  var body = { name: name, role: role, can_see: canSee };
+  if (password) body.password = password;
+  if (newUsername !== oldUsername) body.new_username = newUsername;
+  try {
+    var r = await api('PUT', '/admin/users/' + oldUsername, body);
+    var d = await r.json();
+    if (!r.ok) { showNotification(d.detail || '编辑失败', 'error'); return; }
+    showNotification('用户「'+newUsername+'」已更新', 'success');
+    cancelEditUser();
+    // Refresh
+    var r2 = await api('POST', '/admin/users-full', { password: document.getElementById('mgmtPw').value });
+    var d2 = await r2.json();
+    var r3 = await api('GET', '/admin/users');
+    var d3 = await r3.json();
+    mgmtData.users = d2.users;
+    mgmtData.role_counts = d3.role_counts;
+    mgmtData.role_info = d3.role_info;
+    renderMgmtQuotas();
+    renderMgmtUsers();
+  } catch(e) { showNotification('编辑失败: '+e.message, 'error'); }
+}
+
+// ---- Delete user ----
+function deleteUserConfirm(username, name) {
+  if (!confirm('确定删除用户「'+name+'」？\n此操作不可撤销，该用户将无法再登录系统。')) return;
+  api('DELETE', '/admin/users/' + username).then(async function(r) {
+    var d = await r.json();
+    if (!r.ok) { showNotification(d.detail || '删除失败', 'error'); return; }
+    showNotification(d.message, 'success');
+    // Refresh
+    var r2 = await api('POST', '/admin/users-full', { password: document.getElementById('mgmtPw').value });
+    var d2 = await r2.json();
+    var r3 = await api('GET', '/admin/users');
+    var d3 = await r3.json();
+    mgmtData.users = d2.users;
+    mgmtData.role_counts = d3.role_counts;
+    mgmtData.role_info = d3.role_info;
+    renderMgmtQuotas();
+    renderMgmtUsers();
+  }).catch(function(e) { showNotification('删除失败: '+e.message, 'error'); });
+}
+
+// ---- Admin: Audit Log ----
+async function showAuditLog() {
+  document.getElementById('auditOverlay').classList.add('show');
+  document.getElementById('auditPopup').classList.add('show');
+  document.getElementById('auditContent').innerHTML = '加载中…';
+  try {
+    var r = await api('GET', '/admin/audit?limit=100');
+    var logs = await r.json();
+    if (!r.ok) { document.getElementById('auditContent').innerHTML = '❌ 加载失败'; return; }
+    if (!logs.length) { document.getElementById('auditContent').innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px">暂无审计记录</div>'; return; }
+    var html = '<table class="audit-table"><thead><tr><th>时间</th><th>用户</th><th>操作</th><th>文件</th></tr></thead><tbody>';
+    var actionLabels = { upload: '📤 上传文档', delete: '🗑 删除文档', add_user: '👤 添加用户', edit_user: '✏ 编辑用户', delete_user: '🗑 删除用户', view_all_users: '👁 查看全部账户', update_quotas: '📊 调整配额', change_password: '🔑 修改密码', change_name: '✏ 修改姓名' };
+    logs.forEach(function(l) {
+      html += '<tr><td>'+l.ts+'</td><td>'+l.user+'</td><td>'+(actionLabels[l.action]||l.action)+'</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+l.file+'</td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('auditContent').innerHTML = html;
+  } catch(e) { document.getElementById('auditContent').innerHTML = '❌ 加载失败: '+e.message; }
+}
+
+function hideAuditLog() {
+  document.getElementById('auditOverlay').classList.remove('show');
+  document.getElementById('auditPopup').classList.remove('show');
+}
+
+// ---- Settings ----
+function showSettings() {
+  document.getElementById('settingsOverlay').classList.add('show');
+  document.getElementById('settingsPopup').classList.add('show');
+  var u = getUser(), fullName = u.name;
+  var roleLabel = ROLE_LABELS[u.role] || u.role;
+  document.getElementById('settingsRolePrefix').textContent = roleLabel + '-';
+  // 提取个人姓名（去掉角色前缀 "管理层-" "人事行政-" 等）
+  var personalName = fullName;
+  if (fullName.indexOf(roleLabel + '-') === 0) personalName = fullName.slice(roleLabel.length + 1);
+  else if (fullName.indexOf('-') !== -1) personalName = fullName.split('-').pop();
+  document.getElementById('settingsName').value = personalName;
+  document.getElementById('settingsOldPw').value = '';
+  document.getElementById('settingsNewPw').value = '';
+  document.getElementById('settingsResult').style.display = 'none';
+}
+
+function hideSettings() {
+  document.getElementById('settingsOverlay').classList.remove('show');
+  document.getElementById('settingsPopup').classList.remove('show');
+}
+
+async function doChangeName() {
+  var name = document.getElementById('settingsName').value.trim();
+  if (!name) { showNotification('姓名不能为空', 'error'); return; }
+  try {
+    var r = await api('PUT', '/me/name', { name: name });
+    var d = await r.json();
+    if (!r.ok) { document.getElementById('settingsResult').style.display = 'block'; document.getElementById('settingsResult').innerHTML = '❌ ' + (d.detail || '修改失败'); document.getElementById('settingsResult').style.borderColor = 'var(--danger)'; return; }
+    sessionStorage.setItem('user_name', d.name);
+    document.getElementById('sbUser').textContent = d.name;
+    document.getElementById('topUser').textContent = d.name;
+    showNotification('名称已更新', 'success');
+    hideSettings();
+  } catch(e) { showNotification('修改失败: '+e.message, 'error'); }
+}
+
+async function doChangePassword() {
+  var oldPw = document.getElementById('settingsOldPw').value;
+  var newPw = document.getElementById('settingsNewPw').value;
+  if (!oldPw || !newPw) { showNotification('请填写当前密码和新密码', 'error'); return; }
+  if (newPw.length < 6) { showNotification('新密码至少6位', 'error'); return; }
+  try {
+    var r = await api('PUT', '/me/password', { old_password: oldPw, new_password: newPw });
+    var d = await r.json();
+    if (!r.ok) { document.getElementById('settingsResult').style.display = 'block'; document.getElementById('settingsResult').innerHTML = '❌ ' + (d.detail || '修改失败'); document.getElementById('settingsResult').style.borderColor = 'var(--danger)'; return; }
+    document.getElementById('settingsResult').style.display = 'block';
+    document.getElementById('settingsResult').style.borderColor = 'var(--green)';
+    document.getElementById('settingsResult').innerHTML = '✅ ' + d.message;
+    setTimeout(function() { logout(); }, 2000);
+  } catch(e) { showNotification('修改失败: '+e.message, 'error'); }
+}
+
+// ---- Init ----
+loadFileList(); loadConversations();
+</script>
+</body>
+</html>

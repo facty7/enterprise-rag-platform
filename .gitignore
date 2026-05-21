@@ -1,0 +1,47 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local runtime data
+data/
+files/
+config/users.json
+config/qr_lock.txt
+
+# Local model weights and offline wheels
+models/
+wheels/
+
+# Python
+python/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs and generated reports
+*.log
+logs/
+AI_SOTA_性能评估报告.md
+data/*.json
+data/*.md
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Build output
+dist/
+build/
+*.egg-info/

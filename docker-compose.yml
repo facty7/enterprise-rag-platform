@@ -1,0 +1,77 @@
+services:
+  app:
+    build: .
+    container_name: enterprise-rag-app
+    ports:
+      - "8400:8400"
+    environment:
+      PORT: "8400"
+      LOG_LEVEL: "INFO"
+      HF_HUB_OFFLINE: "${HF_HUB_OFFLINE:-0}"
+      TRANSFORMERS_OFFLINE: "${TRANSFORMERS_OFFLINE:-0}"
+      EMBED_MODEL_NAME: "${EMBED_MODEL_NAME:-BAAI/bge-m3}"
+      RERANKER_MODEL_NAME: "${RERANKER_MODEL_NAME:-BAAI/bge-reranker-v2-m3}"
+      REDIS_ENABLED: "true"
+      REDIS_URL: "redis://redis:6379/0"
+      CACHE_TTL_SECONDS: "${CACHE_TTL_SECONDS:-600}"
+      METRICS_ENABLED: "true"
+      LLM_API_BASE: "${LLM_API_BASE:-https://api.deepseek.com}"
+      LLM_MODEL_NAME: "${LLM_MODEL_NAME:-deepseek-v4-flash}"
+      LLM_API_KEY: "${LLM_API_KEY:-}"
+      USER_DB_KEY: "${USER_DB_KEY:-enterprise_rag_2026_secure_key}"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./files:/app/files
+      - ./config:/app/config
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: enterprise-rag-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: enterprise-rag-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: enterprise-rag-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  prometheus-data:
+  grafana-data:

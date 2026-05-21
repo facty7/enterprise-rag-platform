@@ -1,0 +1,49 @@
+{
+  "roles": {
+    "management": {
+      "label": "管理层",
+      "max": 2
+    },
+    "hr": {
+      "label": "人事行政",
+      "max": 1
+    },
+    "manager": {
+      "label": "业务经理",
+      "max": 1
+    },
+    "sales": {
+      "label": "业务员",
+      "max": 4
+    },
+    "telemarketing": {
+      "label": "电销部",
+      "max": 4
+    }
+  },
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin123",
+      "name": "管理层-管理员",
+      "role": "management",
+      "can_see": [
+        "shared",
+        "reports",
+        "progress",
+        "salary"
+      ]
+    },
+    {
+      "username": "sales01",
+      "password": "sales123",
+      "name": "业务员-演示账号",
+      "role": "sales",
+      "can_see": [
+        "shared",
+        "reports",
+        "progress"
+      ]
+    }
+  ]
+}
