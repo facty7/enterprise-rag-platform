@@ -6,9 +6,13 @@ English version: [README_EN.md](./README_EN.md)
 
 ## 项目预览
 
-| 登录与权限入口 | 知识库工作台 | 上传与文档归属 |
+| 登录与权限入口 | 知识库工作台 | 混合检索模式 |
 | --- | --- | --- |
-| ![登录页](docs/screenshots/login.png) | ![工作台](docs/screenshots/dashboard.png) | ![上传文档](docs/screenshots/upload-modal.png) |
+| ![登录页](docs/screenshots/login.png) | ![工作台](docs/screenshots/dashboard.png) | ![混合检索模式](docs/screenshots/retrieval-modes.png) |
+
+| 上传与文档归属 | 来源引用与链路追踪 |
+| --- | --- |
+| ![上传文档](docs/screenshots/upload-modal.png) | ![来源引用与链路追踪](docs/screenshots/source-trace.png) |
 
 ## 项目亮点
 

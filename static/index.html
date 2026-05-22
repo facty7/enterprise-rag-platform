@@ -91,6 +91,7 @@ body{font-family:"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t
 [data-theme="dark"] .source-foot .src-tag{color:#dbeafe}
 .source-foot .src-meta{margin-top:2px;font-size:11px;color:#64748b}
 .source-foot .src-snippet{margin-top:4px;font-size:11px;color:#475569;line-height:1.55}
+.source-foot mark{background:#fef08a;color:#1f2937;border-radius:3px;padding:0 2px}
 [data-theme="dark"] .source-foot .src-meta,[data-theme="dark"] .source-foot .src-snippet{color:#94a3b8}
 .assistant-msg .typing-dots{display:flex;gap:4px;padding:4px 0}
 .assistant-msg .typing-dots span{width:6px;height:6px;background:#c0c4cc;border-radius:50%;animation:bounce 1.4s infinite ease-in-out}
@@ -99,8 +100,13 @@ body{font-family:"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t
 .search-wrap{padding:10px 18px 18px;background:linear-gradient(transparent,var(--bg) 30%);flex-shrink:0;display:flex;justify-content:center}
 .search-bar{display:flex;gap:8px;align-items:center;background:var(--surface);border:2px solid var(--border);border-radius:28px;padding:4px 4px 4px 18px;width:100%;max-width:780px;transition:border-color 0.2s}
 .search-bar:focus-within{border-color:var(--accent)}
-.mode-select{flex:0 0 94px;border:none;outline:none;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:700;padding:10px 8px;border-radius:18px;appearance:none;-webkit-appearance:none;-moz-appearance:none;cursor:pointer}
-[data-theme="dark"] .mode-select{background:#16213a;color:#93c5fd}
+.mode-select{display:none}
+.mode-tabs{display:flex;gap:3px;padding:3px;background:var(--accent-light);border-radius:20px;flex-shrink:0}
+[data-theme="dark"] .mode-tabs{background:#16213a}
+.mode-tab{border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:700;padding:8px 10px;border-radius:16px;cursor:pointer;white-space:nowrap;min-width:44px}
+.mode-tab:hover{color:var(--accent);background:rgba(37,99,235,0.08)}
+.mode-tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,0.22)}
+[data-theme="dark"] .mode-tab.active{background:#3b82f6;color:#fff}
 .search-bar input{flex:1;border:none;outline:none;font-size:15px;padding:10px 0;background:transparent;color:var(--text);min-width:0}
 .search-bar input::placeholder{color:var(--text3)}
 .search-bar .sbtn{width:42px;height:42px;border:none;background:var(--accent);color:#fff;border-radius:50%;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
@@ -141,7 +147,7 @@ body{font-family:"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t
 .toast{padding:10px 20px;border-radius:8px;font-size:14px;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,0.2);animation:slideDown 0.3s ease-out;white-space:nowrap}
 @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
 .toast.info{background:#3b82f6}.toast.success{background:#22c55e}.toast.warning{background:#e6a23c}.toast.error{background:#ef4444}
-@media(max-width:768px){.sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.menu-btn{display:flex}.sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:19}.sidebar-overlay.show{display:block}.chat-scroll{padding:14px}.search-wrap{padding:10px 14px 16px}.mode-select{flex-basis:78px;font-size:11px;padding:9px 6px}.user-msg{max-width:92%;font-size:14px}.assistant-msg{max-width:94%;font-size:14px}.modal-popup{width:94vw}}
+@media(max-width:768px){.sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.menu-btn{display:flex}.sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:19}.sidebar-overlay.show{display:block}.chat-scroll{padding:14px}.search-wrap{padding:10px 14px 16px}.search-bar{align-items:stretch;flex-wrap:wrap;border-radius:18px;padding:8px}.mode-tabs{width:100%;overflow-x:auto}.mode-tab{flex:1;font-size:11px;padding:7px 8px}.user-msg{max-width:92%;font-size:14px}.assistant-msg{max-width:94%;font-size:14px}.modal-popup{width:94vw}}
 </style>
 </head>
 <body>
@@ -318,13 +324,14 @@ body{font-family:"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t
   </div></div>
 
   <div class="search-wrap"><div class="search-bar">
-    <select id="modeSelect" class="mode-select" title="检索模式">
-      <option value="auto" selected>自动</option>
-      <option value="fast">快速</option>
-      <option value="balanced">平衡</option>
-      <option value="deep">深度</option>
-      <option value="debug">调试</option>
-    </select>
+    <input type="hidden" id="modeSelect" value="auto">
+    <div class="mode-tabs" id="modeTabs" title="检索模式">
+      <button type="button" class="mode-tab active" data-mode="auto">自动</button>
+      <button type="button" class="mode-tab" data-mode="fast">快速</button>
+      <button type="button" class="mode-tab" data-mode="balanced">混合</button>
+      <button type="button" class="mode-tab" data-mode="deep">深度</button>
+      <button type="button" class="mode-tab" data-mode="debug">调试</button>
+    </div>
     <input type="text" id="chatInput" placeholder="搜方案、查资料、找灵感，按 Enter 发送" onkeydown="if(event.key==='Enter')send()">
     <button class="sbtn" id="sendBtn" onclick="send()">➤</button>
   </div></div>
@@ -360,6 +367,18 @@ function escapeHtml(text) {
   return String(text || '').replace(/[&<>"']/g, function(ch) {
     return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
   });
+}
+
+function highlightSnippet(text, query) {
+  var escaped = escapeHtml(text);
+  var words = Array.from(new Set(String(query || '').match(/[\u4e00-\u9fa5]{2,}|[A-Za-z0-9_]{3,}/g) || []));
+  if (/差旅/.test(query || '')) words.push('差旅制度', '住宿标准', '不超过450元', '5个工作日');
+  words = words.filter(function(w) { return w.length >= 2; }).slice(0, 8);
+  words.forEach(function(word) {
+    var safe = escapeHtml(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    escaped = escaped.replace(new RegExp(safe, 'gi'), function(hit) { return '<mark>' + hit + '</mark>'; });
+  });
+  return escaped;
 }
 
 function formatMs(ms) {
@@ -426,8 +445,25 @@ function renderTraceFoot(trace) {
 }
 
 // ---- Auth helpers ----
-function getToken() { return sessionStorage.getItem('auth_token') || ''; }
-function getUser() { return { name: sessionStorage.getItem('user_name') || '', role: sessionStorage.getItem('user_role') || '', can_see: JSON.parse(sessionStorage.getItem('user_can_see') || '["shared"]') }; }
+function getCookie(name) {
+  var parts = document.cookie ? document.cookie.split(';') : [];
+  for (var i = 0; i < parts.length; i++) {
+    var item = parts[i].trim();
+    if (item.indexOf(name + '=') === 0) return decodeURIComponent(item.slice(name.length + 1));
+  }
+  return '';
+}
+function getToken() { return sessionStorage.getItem('auth_token') || getCookie('auth_token') || ''; }
+function getUser() {
+  var fallback = { name: '管理员', role: 'management', can_see: ['shared'] };
+  try {
+    return {
+      name: sessionStorage.getItem('user_name') || fallback.name,
+      role: sessionStorage.getItem('user_role') || fallback.role,
+      can_see: JSON.parse(sessionStorage.getItem('user_can_see') || JSON.stringify(fallback.can_see))
+    };
+  } catch(e) { return fallback; }
+}
 if (!getToken()) window.location.href = '/login.html';
 
 var ROLE_LABELS = { management: '管理层', hr: '人事行政', manager: '业务经理', sales: '业务员', telemarketing: '电销部' };
@@ -491,13 +527,19 @@ function toggleTheme() {
 if (localStorage.getItem('sop_theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
 
 var modeSelect = document.getElementById('modeSelect');
-if (modeSelect) {
-  var savedMode = localStorage.getItem('rag_mode') || 'auto';
-  if (modeSelect.querySelector('option[value="'+savedMode+'"]')) modeSelect.value = savedMode;
-  modeSelect.addEventListener('change', function() {
-    localStorage.setItem('rag_mode', this.value);
-  });
+var modeTabs = document.querySelectorAll('.mode-tab');
+function setMode(mode) {
+  mode = mode || 'auto';
+  if (modeSelect) modeSelect.value = mode;
+  localStorage.setItem('rag_mode', mode);
+  modeTabs.forEach(function(btn) { btn.classList.toggle('active', btn.dataset.mode === mode); });
 }
+var savedMode = localStorage.getItem('rag_mode') || 'auto';
+if (!document.querySelector('.mode-tab[data-mode="'+savedMode+'"]')) savedMode = 'auto';
+setMode(savedMode);
+modeTabs.forEach(function(btn) {
+  btn.addEventListener('click', function() { setMode(btn.dataset.mode); });
+});
 
 // ---- QR ----
 async function showQR() {
@@ -733,7 +775,7 @@ async function send(presetQuery, isPreview) {
               foot += '<div class="src-item" onclick="event.stopPropagation();highlightFileInSidebar(\''+s.file_hash+'\');window.open(\'/api/v1/file/'+s.file_hash+'?token='+getToken()+'\',\'_blank\')" title="'+s.file_name+'">'
                 + '<div class="src-tag">'+label+'</div>'
                 + '<div class="src-meta">'+meta.join(' · ')+'</div>'
-                + (snippet ? '<div class="src-snippet">'+escapeHtml(snippet)+'</div>' : '')
+                + (snippet ? '<div class="src-snippet">'+highlightSnippet(snippet, query)+'</div>' : '')
                 + '</div>';
             });
             foot += '</div>'; sourcesHtml = foot;

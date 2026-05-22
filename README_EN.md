@@ -14,9 +14,13 @@ An enterprise knowledge base and document Q&A platform with:
 
 ## Screenshots
 
-| Login | Workspace | Upload & Permissions |
+| Login | Workspace | Retrieval Modes |
 | --- | --- | --- |
-| ![Login](docs/screenshots/login.png) | ![Workspace](docs/screenshots/dashboard.png) | ![Upload](docs/screenshots/upload-modal.png) |
+| ![Login](docs/screenshots/login.png) | ![Workspace](docs/screenshots/dashboard.png) | ![Retrieval Modes](docs/screenshots/retrieval-modes.png) |
+
+| Upload & Permissions | Source Citation and Trace |
+| --- | --- |
+| ![Upload](docs/screenshots/upload-modal.png) | ![Source Trace](docs/screenshots/source-trace.png) |
 
 ## Quick Start
 
